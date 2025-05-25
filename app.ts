@@ -5,6 +5,11 @@ import truckRoutes from './trucks/truckRoutes'; */
 const app = express();
 app.use(express.json());
 
+// Routes
+app.get('/', (req, res) => {
+    res.send('Welcome to Ant LoadBoard');
+})
+
 export default app;
 
 
