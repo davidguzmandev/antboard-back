@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import User, { Role } from "../users/userModel";
+import { generateActivationToken } from "../emailVerification/tokenUtils";
+import { sendActivationEmail } from "../emailVerification/emailService";
 
 //Esquema ZOD
 const signUpSchema = z.object({
@@ -49,8 +51,13 @@ export const signUpUser = async (req: Request, res: Response) => {
         })
 
         await newUser.save();
+
+        const token = generateActivationToken(newUser._id.toString());
+        const activationLink = `${process.env.BACKEND_URL}/auth/verify?token=${token}`;
+        await sendActivationEmail(newUser.email, activationLink);
+
         return res.status(201).json({
-            message: "User created successfully",
+            message: "User created successfully. Please check your email to activate your account.",
             user: {
                 name: newUser.name,
                 subname: newUser.subname,
