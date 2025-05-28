@@ -20,6 +20,7 @@ export interface IUser extends Document {
     trucks: Types.ObjectId[];
     shipments: Types.ObjectId[];
     isActive: boolean;
+    lastUpdate: Date;
 }
 
 const userSchema = new Schema<IUser>({

@@ -1,4 +1,5 @@
 import express from 'express';
+import authRoutes from './auth/authRoutes';
 /* import loadRoutes from './loads/loadRoutes';
 import truckRoutes from './trucks/truckRoutes'; */
 
@@ -9,6 +10,8 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('Welcome to Ant LoadBoard');
 })
+
+app.use("/auth", authRoutes);
 
 export default app;
 
