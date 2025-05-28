@@ -19,20 +19,22 @@ const signUpSchema = z.object({
 //Tipar el body valido
 type SignUpInput = z.infer<typeof signUpSchema>;
 
-export const signUpUser = async (req: Request, res: Response) => {
+export const signUpUser = async (req: Request, res: Response): Promise<void> => {
     try {
         //Validar con zod
         const parsed = signUpSchema.safeParse(req.body)
         if (!parsed.success) {
             const errors = parsed.error.flatten().fieldErrors;
-            return res.status(400).json({ error: "Validation failed", details: errors });
+            res.status(400).json({ error: "Validation failed", details: errors });
+            return
         }
         const { role, name, subname, email, password, companyName, phone }: SignUpInput = parsed.data;
 
         // Verificar si el usuario ya existe
         const existingUser = await User.findOne({ email });
         if ( existingUser ) {
-            return res.status(409).json({ error: "User already exists" });
+            res.status(409).json({ error: "User already exists" });
+            return
         }
 
         // Encriptar la contraseña
@@ -53,10 +55,10 @@ export const signUpUser = async (req: Request, res: Response) => {
         await newUser.save();
 
         const token = generateActivationToken(newUser._id.toString());
-        const activationLink = `${process.env.BACKEND_URL}/auth/verify?token=${token}`;
+        const activationLink = `${process.env.BACKEND_URL}:${process.env.PORT}/auth/verify?token=${token}`;
         await sendActivationEmail(newUser.email, activationLink);
 
-        return res.status(201).json({
+        res.status(201).json({
             message: "User created successfully. Please check your email to activate your account.",
             user: {
                 name: newUser.name,

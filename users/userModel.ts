@@ -8,19 +8,20 @@ export enum Role {
 }
 
 export interface IUser extends Document {
+    _id: Types.ObjectId;
     role: Role;
     name: string;
     subname: string;
     email: string;
-    password: string;
+    password?: string;
     companyName?: string;
     phone?: string;
     createdAt?: Date;
+    updatedAt?: Date;
     loads: Types.ObjectId[];
     trucks: Types.ObjectId[];
     shipments: Types.ObjectId[];
     isActive: boolean;
-    lastUpdate: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -31,11 +32,11 @@ const userSchema = new Schema<IUser>({
     password: { type: String, required: true, minlength: 6 },
     companyName: { type: String, trim: true },
     phone: { type: String, trim: true },
-    createdAt: { type: Date, default: Date.now },
     loads: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Load' }],
     trucks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Truck' }],
     shipments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shipment' }],
-});
+    isActive: { type: Boolean, default: false },
+}, { timestamps: true });
 
 const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);
 

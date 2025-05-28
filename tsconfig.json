@@ -1,13 +1,17 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
-    },
-    "include": ["src/**/*"]
+  "compilerOptions": {
+    "target": "es2022", // Cambiado para Node.js moderno
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./", // Si los archivos están en la raíz o subcarpetas directas
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["**/*.ts"], // Incluye todos los archivos .ts en el proyecto
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

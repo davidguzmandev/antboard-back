@@ -11,7 +11,7 @@ app.get('/', (req, res) => {
     res.send('Welcome to Ant LoadBoard');
 })
 
-app.use("/auth", authRoutes);
+app.use('/auth', authRoutes);
 
 export default app;
 
