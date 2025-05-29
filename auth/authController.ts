@@ -51,7 +51,6 @@ export const signUpUser = async (req: Request, res: Response): Promise<void> => 
             phone,
             isActive: false, // Por defecto, el usuario está inactivo, activar con NODEMAILER
         })
-
         await newUser.save();
 
         const token = generateActivationToken(newUser._id.toString());
