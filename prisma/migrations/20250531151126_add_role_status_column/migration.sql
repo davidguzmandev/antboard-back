@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "roleStatus" TEXT NOT NULL DEFAULT 'PENDING';
