@@ -35,4 +35,34 @@ model User {
   updatedAt   DateTime  @updatedAt
   isActive    Boolean   @default(false)
 
+  // Relacion uno a muchos con Load
+  loads       Load[]    // Loads creadas por el usuario como Shipper o BROKER
+
+
+}
+
+model Load {
+  id              String    @id @default(uuid())
+  origin          String
+  destination     String
+  pickupEarliest  DateTime
+  pickupLatest    DateTime?
+  pickupHours     String?
+  dropOffHours    String?
+  equipmentType   String
+  equipmentLength Float
+  equipmentWeight Float
+  isFullLoad      Boolean   //true = Full, false = Partial
+  comments        String?
+  commodity       String?
+  referenceId     String?
+  contactPhone1   String?   //Telefono principal
+  contactPhone2   String?   //Telefono alternativo
+  contactEmail    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Asociacion con el usuario que creo el load
+  postedBy        User      @relation(fields: [userId], references: [id])
+  userId          String
 }
