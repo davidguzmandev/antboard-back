@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import User, { Role } from "../users/userModel";
+import prisma from '../config/db'
+import { Role } from '@prisma/client';
 import { generateActivationToken } from "../emailVerification/tokenUtils";
 import { sendActivationEmail } from "../emailVerification/emailService";
 
@@ -31,7 +32,9 @@ export const signUpUser = async (req: Request, res: Response): Promise<void> => 
         const { role, name, subname, email, password, companyName, phone }: SignUpInput = parsed.data;
 
         // Verificar si el usuario ya existe
-        const existingUser = await User.findOne({ email });
+        const existingUser = await prisma.user.findUnique({
+            where: { email: email },
+        })
         if ( existingUser ) {
             res.status(409).json({ error: "User already exists" });
             return
@@ -41,19 +44,33 @@ export const signUpUser = async (req: Request, res: Response): Promise<void> => 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         //Crear el usuario
-        const newUser = new User({
-            role,
-            name,
-            subname,
-            email,
-            password: hashedPassword,
-            companyName,
-            phone,
-            isActive: false, // Por defecto, el usuario está inactivo, activar con NODEMAILER
-        })
-        await newUser.save();
+        const newUser = await prisma.user.create({
+            data: {
+                role,
+                name,
+                subname,
+                email,
+                password: hashedPassword,
+                companyName: companyName || null, // Asegura que si es undefined, se guarda como null
+                phone: phone || null,             // Asegura que si es undefined, se guarda como null
+                isActive: false, // Por defecto, el usuario está inactivo, activar con NODEMAILER
+            },
+            // Selecciona los campos que quieres devolver (¡nunca la contraseña!)
+            select: {
+                id: true,
+                name: true,
+                subname: true,
+                email: true,
+                role: true,
+                companyName: true,
+                phone: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
+            }
+        });
 
-        const token = generateActivationToken(newUser._id.toString());
+        const token = generateActivationToken(newUser.id.toString());
         const activationLink = `${process.env.BACKEND_URL}:${process.env.PORT}/auth/verify?token=${token}`;
         await sendActivationEmail(newUser.email, activationLink);
 
@@ -65,8 +82,13 @@ export const signUpUser = async (req: Request, res: Response): Promise<void> => 
                 email: newUser.email,
             },
         });
-    } catch (error) {
-        console.log("Error in Sign Up: ", error);
-        res.status(500).json({ error: "Internal server error" });
+    } catch (error: any) {
+        console.error("Error in Sign Up: ", error); // Usar console.error para errores
+        // Manejo de error de email duplicado específico de Prisma (código P2002)
+        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+            res.status(409).json({ message: 'User with this email already exists.' });
+            return;
+        }
+        res.status(500).json({ error: "Internal server error", details: error.message });
     }
 }
